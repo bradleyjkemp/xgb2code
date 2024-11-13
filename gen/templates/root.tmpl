@@ -3,7 +3,6 @@
 package {{.PackageName}}
 
 import (
-	"fmt"
 	"math"
 )
 
@@ -20,7 +19,6 @@ func {{.FuncName}}MultiClass(data []*float32, predMargin bool) (float32, int) {
 	}
 {{range .TreeFunctions }}
 	sums[{{.Class}}] += {{.Name}}(data)
-	fmt.Println(sums)
 {{- end}}
 
 	if len(sums) > 1 {

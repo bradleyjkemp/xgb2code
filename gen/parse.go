@@ -14,9 +14,15 @@ type xgbModel struct {
 		} `json:"attributes"`
 		GradientBooster struct {
 			Model struct {
-				Trees []xgbTree `json:"trees"`
+				TreeInfo []int     `json:"tree_info"`
+				Trees    []xgbTree `json:"trees"`
 			} `json:"model"`
 		} `json:"gradient_booster"`
+		ModelParams struct {
+			BaseScore  json.Number `json:"base_score"`
+			NumClass   json.Number `json:"num_class"`
+			NumFeature json.Number `json:"num_feature"`
+		} `json:"learner_model_param"`
 	} `json:"learner"`
 }
 
@@ -56,7 +62,13 @@ func readTrees(x *xgbModel) ([]*node, error) {
 			return nil, err
 		}
 
+		treeInfo.data.Class = x.Learner.GradientBooster.Model.TreeInfo[i]
 		trees = append(trees, treeInfo)
+	}
+
+	if x.Learner.Attributes.BestIteration == "" {
+		// model was not trained with early stopping, use all the trees
+		return trees, nil
 	}
 
 	bestIteration, err := x.Learner.Attributes.BestIteration.Int64()
@@ -77,6 +89,7 @@ type node struct {
 }
 
 type nodeData struct {
+	Class          int
 	DefaultLeft    int
 	ID             int
 	SplitCondition float64

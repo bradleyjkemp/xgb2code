@@ -8,13 +8,16 @@ import (
 )
 
 type treeFunction struct {
-	Code string
-	Name string
+	Code  string
+	Name  string
+	Class int
 }
 
 func generateSource(
 	packageName,
 	funcName string,
+	baseScore float32,
+	numClasses int64,
 	trees []*node,
 	r *renderer,
 ) (string, error) {
@@ -29,13 +32,14 @@ func generateSource(
 		treeFunctions = append(
 			treeFunctions,
 			treeFunction{
-				Code: code,
-				Name: fmt.Sprintf("tree%s_%d", funcName, i),
+				Code:  code,
+				Name:  fmt.Sprintf("tree%s_%d", funcName, i),
+				Class: t.data.Class,
 			},
 		)
 	}
 
-	code, err := r.executeRoot(packageName, funcName, treeFunctions)
+	code, err := r.executeRoot(packageName, funcName, baseScore, numClasses, treeFunctions)
 	if err != nil {
 		return "", err
 	}
@@ -90,7 +94,17 @@ func GenerateFile(
 		return err
 	}
 
-	code, err := generateSource(packageName, funcName, trees, r)
+	numClasses, err := x.Learner.ModelParams.NumClass.Int64()
+	if err != nil {
+		return fmt.Errorf("error parsing num_class as int: %w", err)
+	}
+
+	baseScore, err := x.Learner.ModelParams.BaseScore.Float64()
+	if err != nil {
+		return fmt.Errorf("error parsing base_score as float: %w", err)
+	}
+
+	code, err := generateSource(packageName, funcName, float32(baseScore), numClasses, trees, r)
 	if err != nil {
 		return err
 	}

@@ -97,12 +97,16 @@ func (r *renderer) executeDecisionNode(
 type rootParams struct {
 	FuncName      string
 	PackageName   string
+	BaseScore     float32
+	NumClasses    int64
 	TreeFunctions []treeFunction
 }
 
 func (r *renderer) executeRoot(
 	packageName,
 	funcName string,
+	baseScore float32,
+	numClasses int64,
 	treeFunctions []treeFunction,
 ) (string, error) {
 	var buf bytes.Buffer
@@ -112,6 +116,8 @@ func (r *renderer) executeRoot(
 		rootParams{
 			FuncName:      funcName,
 			PackageName:   packageName,
+			BaseScore:     baseScore,
+			NumClasses:    numClasses,
 			TreeFunctions: treeFunctions,
 		},
 	)
